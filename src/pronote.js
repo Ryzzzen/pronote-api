@@ -309,7 +309,7 @@ async function fetch({ username, password, url, cas })
 
     if (!auth.listeOngletsInvisibles.includes(88))
     {
-        result['homeworks'] = (await homeworks(url, session, first)).concat(await homeworks(url, session, second));
+        result['homework'] = (await homework(url, session, first)).concat(await homework(url, session, second));
     }
 
     /*console.log(url + 'FichiersExternes' + '/' + cipher.cipher({
@@ -656,26 +656,26 @@ async function timetable(session, user)
     return weeks;
 }
 
-async function homeworks(url, session, week)
+async function homework(url, session, week)
 {
     let result = [];
 
-    let homeworks = await navigate(session, 88, 'PageCahierDeTexte', {
+    let homework = await navigate(session, 88, 'PageCahierDeTexte', {
         domaine: {
             "_T": 8,
             "V": "[" + week + ".." + week + "]"
         }
     });
 
-    //homeworks = await readXML(homeworks.xml);
-    homeworks = homeworks.donnees.ListeTravauxAFaire.V;
+    //homework = await readXML(homework.xml);
+    homework = homework.donnees.ListeTravauxAFaire.V;
 
-    if (homeworks === undefined)
+    if (homework === undefined)
     {
         return [];
     }
 
-    homeworks.forEach(homework => {
+    homework.forEach(homework => {
         let content = homework.descriptif.V;
         content = content.substring(5, content.length - 6);
 
