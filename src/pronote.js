@@ -234,7 +234,7 @@ async function fetch({ username, password, url, cas })
         const menu = home.donnees.menuDeLaCantine.listeRepas.V;
         if (menu.length > 0) {
             const content = menu[0].listePlats.V;
-            result['menu'] = [];
+            result.menu = [];
 
             for (let entry of content) {
                 const food = entry.listeAliments.V;
@@ -267,7 +267,7 @@ async function fetch({ username, password, url, cas })
                 defaultPeriod = util.parsePeriod(period.name);
             }
 
-            result['marks'].push({ period: period.id, ...res });
+            result.marks.push({ period: period.id, ...res });
         }
     }
 
@@ -284,9 +284,9 @@ async function fetch({ username, password, url, cas })
         }
     }
 
-    result['periods'] = periods.map(({ N, ...period }) => period);
+    result.periods = periods.map(({ N, ...period }) => period);
 
-    result['timetable'] = await timetable(session, auth.ressource);
+    result.timetable = await timetable(session, auth.ressource);
 
     let weekShift = 9;
 
@@ -294,22 +294,25 @@ async function fetch({ username, password, url, cas })
         weekShift = 17;
     }
 
-    let first = new Date(result['timetable'][0].time).getWeek() + weekShift;
-    let second = new Date(result['timetable'][1].time).getWeek() + weekShift;
-
-    if (first > 44)
-    {
-        first -= 44;
-    }
-
-    if (second > 44)
-    {
-        second -= 44;
-    }
-
     if (!auth.listeOngletsInvisibles.includes(88))
     {
-        result['homework'] = (await homework(url, session, first)).concat(await homework(url, session, second));
+      let first = new Date(result['timetable'][0].time).getWeek() + weekShift;
+      let second = new Date(result['timetable'][1].time).getWeek() + weekShift;
+
+      if (first > 44)
+      {
+          first -= 44;
+      }
+
+      if (second > 44)
+      {
+          second -= 44;
+      }
+
+      //let first = new Date(result.periods[0].time).getWeek();
+      //let second = new Date(result.periods[1].time).getWeek();
+
+      result.homework = (await homework(url, session, first)).concat(await homework(url, session, second));
     }
 
     /*console.log(url + 'FichiersExternes' + '/' + cipher.cipher({
@@ -467,6 +470,7 @@ async function marks(session, period)
             studentClassAverage: util.parseMark(subject.moyClasse.V),
             maxAverage: util.parseMark(subject.moyMax.V),
             minAverage: util.parseMark(subject.moyMin.V),
+            color: subject.couleur,
             marks: []
         };
     });
@@ -586,7 +590,8 @@ async function timetable(session, user)
             let res = {
                 from,
                 to,
-                color: lesson.CouleurFond || '#FFF'
+                color: lesson.CouleurFond || '#FFF',
+                status: lesson.Statut
             };
 
             if (lesson.ListeContenus) {
@@ -607,9 +612,9 @@ async function timetable(session, user)
                 }
             }
 
-            res['away'] = lesson.Statut === 'Prof. absent' || lesson.Statut === 'Conseil de classe';
-            res['cancelled'] = lesson.Statut === 'Cours annulé';
-            res['priority'] = lesson.Statut === 'Cours modifié' || lesson.Statut === 'Cours maintenu' || lesson.Statut === 'Remplacement';
+            res.away = res.status === 'Prof. absent' || res.status === 'Conseil de classe';
+            res.cancelled = res.status === 'Cours annulé';
+            res.priority = res.status === 'Cours modifié' || res.status === 'Cours maintenu' || res.status === 'Remplacement';
 
             result.push(res);
         });
@@ -671,9 +676,7 @@ async function homework(url, session, week)
     homework = homework.donnees.ListeTravauxAFaire.V;
 
     if (homework === undefined)
-    {
-        return [];
-    }
+       return [];
 
     homework.forEach(homework => {
         let content = homework.descriptif.V;
@@ -682,6 +685,8 @@ async function homework(url, session, week)
         result.push({
             subject: homework.Matiere.V.L,
             content: util.decodeHTML(content),
+            /* Cette valeur change quand l'utilisateur coche la case 'fait' à côté d'un devoir dans Pronote */
+            done: homework.TAFFait,
             since: util.parseDate(homework.DonneLe.V),
             until: util.parseDate(homework.PourLe.V),
             toGive: !!homework.avecRendu,
