@@ -5,18 +5,13 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "mkdir public"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
     "pronote",
     "api"
   ],
   "author": "Adrien 'Litarvan' Navratil <adrien1975@live.Fr>",
-  "builds": [{
-    "src": "index.js",
-    "use": "@now/node-server"
-  }],
   "license": "GPL-3.0",
   "dependencies": {
     "axios": "^0.18.1",
