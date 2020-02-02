@@ -12,6 +12,10 @@
     "api"
   ],
   "author": "Adrien 'Litarvan' Navratil <adrien1975@live.Fr>",
+  "builds": [{
+    "src": "index.js",
+    "use": "@now/node-server"
+  }],
   "license": "GPL-3.0",
   "dependencies": {
     "axios": "^0.18.1",
